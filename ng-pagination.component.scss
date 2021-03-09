@@ -1,0 +1,86 @@
+@import '../../../../../../styles/variables';
+@import '../../../../../../styles/mixins';
+
+:host ::ng-deep {
+    ul.simple-pagination {
+        list-style: none;
+    }
+
+    .simple-pagination {
+        display: inline-block;
+        overflow: hidden;
+        padding: 0px 5px 0px 0;
+        margin: 0;
+        vertical-align: middle;
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        li {
+            list-style: none;
+            padding: 0px 3px;
+            margin: 0;
+            float: left;
+        }
+    }
+
+    span.ellipse.clickable {
+        cursor: pointer;
+    }
+
+    .ellipse input {
+        width: 3em;
+    }
+
+    .compact-theme {
+        span {
+            cursor: pointer;
+        }
+
+        a, span {
+            @include applyFont($fontSize: 13px);
+            display: block;
+            font-weight: 400;
+        }
+
+        a:hover {
+            text-decoration: none;
+            background: #1277d9;
+            color: #FFFFFF;
+            border-radius: 5px;
+        }
+        
+        li {
+            &:not(.disabled):not(.active) span:hover {
+                text-decoration: none;
+                background: #1277d9;
+            }  
+
+            span, a {
+                padding: 5px 10px 5px;
+                color: #40505B;
+            }
+
+            &.active {
+                span {
+                    background: #1277d9;
+                    color: #FFFFFF;
+                    border-radius: 5px;
+                }
+            }
+        }
+
+        .current {
+            cursor: default;
+        }
+
+        .ellipse {
+            background: transparent;
+            padding: 0 10px;
+            cursor: default;
+        }
+    }
+}
+
+

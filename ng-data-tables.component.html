@@ -1,0 +1,227 @@
+<div class="ng-data-table-wrap">
+  <div class="top-toolbar-wrap">
+    <div class="extra-toolbar-left">
+      <ng-content select="[button-toolbar-left]"></ng-content>
+    </div>
+    <div class="text-right">
+      <div class="all-search-box" *ngIf="searchBox">
+        <label for="searchTableData" aria-label="Search">
+          <input autocomplete="off" id="searchTableData" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Search'" tabindex="0" type="search"
+            placeholder="{{'Search' | translate}}"  (keyup)="search($event)" #globalFilter [ngModel]="searchTableDataValue" role="textbox"/>
+          <!--<input autocomplete="off" type="search" placeholder="{{'Search' | translate}}" (keyup)="search()" #globalFilter />-->
+        </label>
+      </div>
+      <div class="button-toolbar">
+        <ng-content select="[button-toolbar]"></ng-content>
+      </div>
+    </div>
+
+
+    <div class="extra-toolbar">
+      <ng-content select="[content-toolbar]"></ng-content>
+    </div>
+    <div class="extra-toolbar-center">
+      <ng-content select="[content-toolbar-center]"></ng-content>
+    </div>
+    <div class="extra-toolbar-center">
+      <ng-content select="[content-toolbar-center]"></ng-content>
+    </div>
+    <div class="clearfix"></div>
+  </div>
+  <div class="table-responsive">
+    <table class="responsive user-selection">
+      <thead [ngClass]="{'draggablThead':showDragAndDrop}">
+        <tr>
+          <th *ngIf="showDragAndDrop" class="text-center"></th>
+          <th *ngIf="showCheckBox" class="text-center">
+            <!-- <label for="checkAll" class="sr-only" >checkAll</label>  -->
+            <input autocomplete="off" aria-label="checkAll" type="checkbox" id="checkAll" (change)="checkAll($event)" #selectAllCheckbox  tabindex="0"  role="checkbox" aria-checked="false"/> 
+          </th>
+          <th *ngFor="let column of columns; let i = index" [attr.id]="column.key | translate" [class.sortable]="column.sortable" [class.hiddenColumn]="column.hiddenColumn">
+            <span (click)="sort(column.path)" [attr.aria-label]="column.title | translate">
+              <span tabindex="0" class="col-heading" [title]="column.title | translate" > {{column.title | translate}}</span>
+
+              <!-- [attr.aria-label]="column.key != sortColumn?'':(isDesc == true?'Descending Order':'Ascending Order')" -->
+              <a href="javascript:void(0);" role="link" tabindex="0" aria-label="Sort" [title]="column.key != sortColumn?'Sort Column':(isDesc == true?'Descending Order':'Ascending Order')"
+                class="col-sort">
+
+                <div class="sort-arrows" *ngIf="column.sortable" aria-hidden="true">
+                  <i aria-hidden="true" class="fa fa-sort" *ngIf="column.key != sortColumn"></i>
+                  <i title="Ascending Order" aria-hidden="true" class="fa fa-sort-asc" *ngIf="column.key == sortColumn && isDesc == false"></i>
+                  <i title="Descending Order" aria-hidden="true" class="fa fa-sort-desc" *ngIf="column.key == sortColumn && isDesc == true"></i>
+                </div>
+              </a>
+
+            </span>
+            <!--<div tabindex="0">
+              <input autocomplete="off" [attr.aria-label]="(column.title  | translate ) + 'Filter'" *ngIf="column.filter" [attr.id]="'filter' + i" class="filter-input"
+              [ngClass]="{'single-col-filter' : singleColummn}" type="text" placeholder="{{'Filter' | translate}}" onfocus="this.placeholder = ''"
+              onblur="this.placeholder = 'Filter'" [attr.data-column]="column.key" (keyup)="search(column.key)" #filterInputs
+              [ngModel]="column.filterValue" />
+            </div>-->
+            <!-- <label tabindex="0"  [attr.for]="'filter' + i"  class="sr-only"  >{{'filter' + i}}</label> -->
+            <!--<div *ngIf="!column.filter" style="height: 35px;"></div>-->
+          </th>
+          <th *ngIf="hasActionButtons" class="actions">
+            <span>{{'ACTION' | translate}}</span>
+            <!--<div style="height: 35px;"></div>-->
+          </th>
+          <th class="actions visible-xs">
+            View
+          </th>
+        </tr>
+        <tr>
+          <th *ngIf="showDragAndDrop" class="text-center">&nbsp;</th>
+          <th *ngIf="showCheckBox" class="text-center">&nbsp;</th>
+          <th *ngFor="let column of columns; let i = index" [attr.id]="column.filterId" [class.sortable]="column.sortable" [class.hiddenColumn]="column.hiddenColumn">
+            <input autocomplete="off" [attr.aria-label]="(column.title  | translate ) + 'Filter'" *ngIf="column.filter" [attr.id]="'filter' + i" class="filter-input"
+              [ngClass]="{'single-col-filter' : singleColummn}" type="text" placeholder="{{'Filter' | translate}}" onfocus="this.placeholder = ''"
+              onblur="this.placeholder = 'Filter'" [attr.data-column]="column.key" (keyup)="search(column.key)" #filterInputs
+              [ngModel]="column.filterValue" role="textbox" tabindex="0" aria-label="filter"/>
+          </th>
+           <th *ngIf="hasActionButtons" class="actions">&nbsp; </th>
+          <th class="actions visible-xs">&nbsp;</th>
+        </tr>
+      </thead>
+
+
+      <tbody [ngClass]="{'draggablTbody':showDragAndDrop}">
+        <tr [dragEnabled]="showDragAndDrop" draggable [dragHandle]="'.drag-handle'" [dragImage]="'../assets/images/envelope1.png'"
+          [dragData]="row" *ngFor="let row of rows; index as i; trackBy: trackByFn" (click)="rowSelected(row,i)" [ngClass]="{'highlight' : row.tempDelete, 'disableRow' : row.rowDisabled}"
+          [class.highlightRow]="i==highlightedIndex && isHighlight" (dblclick)="rowDoubleClicked(row)">
+          <td class="text-center d-handle hidden-xs" *ngIf="showDragAndDrop">
+            <div class="pull-right drag-icon">
+              <i class="drag-handle fa fa-arrows-alt " aria-hidden="true"></i>
+            </div>
+          </td>
+          <td class="text-center" *ngIf="showCheckBox">
+
+            <input autocomplete="off" type="checkbox" [attr.aria-label]="'checkbox' + i" [attr.id]="'checkbox' + i" [checked]="row.selectedItem" [(ngModel)]="row.selectedItem"
+              (click)="$event.stopPropagation()" (change)="rowCheck($event, row)" />
+            <!-- <label  class="sr-only" for="checkbox" >Checkbox</label> -->
+
+          </td>
+
+          <td *ngFor="let column of columns" [attr.data-title]="column.title" [class.link]="column.link" [class.hiddenColumn]="column.hiddenColumn">
+            <span tabindex="0" [attr.aria-label]="row[column.key]" *ngIf="column.displayBooleanAsIcon?!column.displayBooleanAsIcon:true  && !row.isEdit && !column.displayColumnEvent"
+              class="data-el{{tagClass(row[column.key], column.isTag)}}" (click)="gotoLink(row, column)" [attr.title]="row[column.key]">
+              <span aria-hidden="true"> {{echo(row, column)}}</span>
+            </span>
+            <span tabindex="0" *ngIf="showInputBox && row.isEdit" class="data-el{{tagClass(row[column.key], column.isTag)}}" (click)="gotoLink(row, column)"
+              [attr.title]="row[column.key]">
+              <input autocomplete="off" type="text" (keyup)="customerSegment(row)" [(ngModel)]=row.customerSegment />
+            </span>
+            <span tabindex="0" *ngIf="column.displayBooleanAsIcon">
+              <i [class]="row[column.key]==true?'fa fa-check-circle check_icon':'fa fa-times-circle uncheck_icon'" aria-hidden="true" (click)="$event.stopPropagation()"></i>
+            </span>
+            <span tabindex="0" *ngIf="column.displayColumnEvent" style="cursor:pointer" (click)="onClickEvent(row,column.key)">
+              <i [class]="row[column.key]==true?'fa fa-check-circle check_icon':'fa fa-times-circle uncheck_icon'" aria-hidden="true"></i>
+            </span>
+          </td>
+          <td *ngIf="hasActionButtons" data-title="ACTION" [ngClass]="{'paddingForAction':showBlockUnblockButton}">
+            <div class="action_buttons" [ngClass]="{'action_buttons1' : i==highlightedIndex && isHighlight}">
+              <a href="javascript:void(0);" tabindex="0" class="clone"  [title]="'Clone' | translate">
+                <i aria-label="cloneRow"></i>
+              </a>
+              <a href="javascript:void(0);" tabindex="0" class="up" (click)="up(row)" *ngIf="showUpArrowButton" [title]="'Up' | translate">
+                <i aria-label="moveRowUp" class="{{upArrowButtonIcon}}"></i>
+              </a>
+              <a href="javascript:void(0);" tabindex="0" class="down" (click)="down(row)" *ngIf="showDownArrowButton" [title]="'Down' | translate">
+                <i aria-label="moveRowDown" class="{{downArrowButtonIcon}}"></i>
+              </a>
+              <a href="javascript:void(0);" tabindex="0" class="users" (click)="showUsers(row)" *ngIf="showUsersButton" [title]="'Users' | translate">
+                <i aria-label="showUsers" class="{{usersButtonIcon}}"></i>
+              </a>
+              <a href="javascript:void(0);" aria-label="editRow" tabindex="0" class="edit" (click)="edit(row)" *ngIf="showEditButton" title="{{editButtonTooltip | translate}}">
+                <i aria-label="editRow" class="{{editButtonIcon}}"></i>
+              </a>
+              <a href="javascript:void(0);" aria-label="delete" tabindex="0" class="delete" (click)="delete(row)" *ngIf="showDeleteButton" title="{{deleteButtonTooltip | translate}}">
+                <i aria-label="delete" class="{{deleteButtonIcon}}"></i>
+              </a>
+              <a href="javascript:void(0);" tabindex="0" class="history" (click)="history(row)" *ngIf="showHistoryButton" title="{{historyButtonTooltip | translate}}">
+                <i aria-label="showHistory" ></i>
+              </a>
+              <a href="javascript:void(0);" tabindex="0" class="view" (click)="view(row)" *ngIf="showViewButton" title="{{viewButtonTooltip | translate}}">
+                <i class="fa fa-eye" aria-hidden="true"></i>
+              </a>
+              <a href="javascript:void(0);" tabindex="0" class="view" (click)="download(row)" *ngIf="downloadButton" title="{{downloadButtonTooltip | translate}}">
+                <i class="fa fa-download" aria-hidden="true"></i>
+              </a>
+              <a href="javascript:void(0);" tabindex="0" class="view" (click)="sendMail(row)" *ngIf="sendMailButon" title="{{sendMailButtonTooltip | translate}}">
+                <i class="fa fa-paper-plane" aria-hidden="true"></i>
+              </a>
+              <a href="javascript:void(0);" tabindex="0" class="view" (click)="pay(row)" *ngIf="payNowButton" title="{{payNowButtonTooltip | translate}}">
+                <i class="fa fa-money" aria-hidden="true"></i>
+              </a>
+
+              <a href="javascript:void(0);" tabindex="0" class="calender"  *ngIf="showCalenderButton" [title]="'Calender' | translate">
+                <i aria-label="calender" class="fa fa-calendar" aria-hidden="true"></i>
+              </a>
+
+              <span *ngIf=showMailButton>
+                <a href="javascript:void(0);" tabindex="0" class="mail" (click)="mail(row)" *ngIf="row.email && !row.sms" title="Mail">
+                  <i aria-label="mail" class="fa fa-envelope"></i>
+                </a>
+                <a href="javascript:void(0);" tabindex="0" class="sms" (click)="sms(row)" *ngIf="row.sms && !row.email" title="Sms">
+                  <i aria-label="sms" class="fa fa-mobile  mob-font"></i>
+                </a>
+                <a href="javascript:void(0);" tabindex="0" class="forward" (click)="forward(row)" *ngIf="row.email && row.sms" title="Mail And SMS">
+                  <i aria-label="forward" class="fa fa-forward forword-font"></i>
+                </a>
+              </span>
+              <span class="delete" *ngIf="showBlockUnblockButton" title="{{blockUnblockToolTip | translate}}">
+                <label class="switch">
+                  <input autocomplete="off" type="checkbox" [checked]="row.isBlocked" [(ngModel)]="row.isBlocked" (change)="blockUnblock($event, row)" aria-label="blockOrUnblock">
+                  <span class="slider round"></span>
+                </label>
+              </span>
+              <!-- <span *ngIf="showTestButton" (click)="testTargetModel(row)" class="mail" title="Test">
+                            <i class="fa fa-caret-square-o-right"></i>
+                        </span> -->
+              <span class="switchText" *ngIf="showDeactivateButton" [title]="(row.active?'Activate':'Deactivate') | translate">
+                <label class="switch">
+                  <input autocomplete="off" type="checkbox" [checked]="row.active" [attr.aria-label]="(row.active?'Activate':'Deactivate') | translate" tabindex="0" [(ngModel)]="row.active"
+                    (change)="deActivate($event, row)">
+                  <span class="slider round"> </span>
+                </label>
+              </span>
+            </div>
+          </td>
+          <td class="actions visible-xs" *ngIf="showDragAndDrop">
+            <a  href="javascript:void(0)l" aria-label="View" (click)="rowDoubleClicked(row)" class="app-btn orange-button app-btn-icon" title="View"  >
+              View
+            </a>
+          </td>
+        </tr>
+        <tr *ngIf="rows.length == 0">
+          <td *ngIf="!hasActionButtons && showCheckBox" [attr.colspan]="columns.length + 3" class="no-records">{{'No data available' | translate}}</td>
+          <td *ngIf="!hasActionButtons && !showCheckBox" [attr.colspan]="columns.length" class="no-records">{{'No data available' | translate}}</td>
+          <td *ngIf="hasActionButtons && !showCheckBox" [attr.colspan]="columns.length + 1" class="no-records">{{'No data available' | translate}}</td>
+          <td *ngIf="hasActionButtons && showCheckBox" [attr.colspan]="columns.length + 2" class="no-records">{{'No data available' | translate}}</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bottom-bar-wrap">
+    <!-- <div class="row"> -->
+      <div class="col-sm-4 nopadding">
+        <div class="table-info" *ngIf="totalRows !== 0">{{'Displaying item' |translate}} : {{first}} - {{last}} {{'of' | translate}} {{totalRows}}
+        </div>
+      </div>
+      <div class="col-sm-8 text-right nopadding">
+        <div class="per-page-select-wrap">
+          <select type="number" title="Number Of Pages" aria-label="Number Of Pages" [(ngModel)]="perPage" (ngModelChange)="onPerPage($event)"  tabindex="0" role="listbox">
+            <option *ngFor="let page of perPageArray" [value]="page.number" role="option">{{page.number}}</option>
+          </select>
+        </div>
+        <div class="pagination-wrap">
+          <ng-pagination tabindex="0" directionLinks="true" [isAjax]="isAjax" [totalRows]="totalRows" [perPage]="perPage" (paginateRecords)="paginateRecords($event,true);"></ng-pagination>
+        </div>
+      </div>
+    <!-- </div> -->
+
+
+    <div class="clearfix"></div>
+  </div>
